@@ -1,4 +1,3 @@
-import logo from './logo.svg';
 import './App.css';
 import "pepsico-ds/css";
 import {Button, Header} from "pepsico-ds";
