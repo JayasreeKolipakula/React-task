@@ -14,8 +14,83 @@ function BasicForm() {
         remembertheinfo:""
 
     });
+    const [errors, setErrors] = useState({
+        username: "",
+        email: "",
+        password: ""
+    });
 
-    const setGenderValue = (gender) => {
+    const validateUsername = (username) => {
+        const regex = /^[a-zA-Z0-9]{1,10}$/;
+        if (!regex.test(username)) {
+            return false;
+        }
+        return true;
+    };
+
+    const validateEmail = (email) => {
+        const regex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+        if (!regex.test(email)) {
+            return false;
+        }
+        return true;
+    };
+
+    const validatePassword = (password) => {
+        const regex = /^(?!.*[@#].*[@#])[a-zA-Z\d@#]{8,12}$/;
+
+        if (!regex.test(password)) {
+            return false;
+        }
+        return true;
+    };
+    let textStyle={};
+    const handleInput = (e) => {
+        const { name, value } = e.target;
+        let error = "";
+
+        switch (name) {
+            case "username":
+                if (validateUsername(value)){
+                    error = "";
+                    textStyle={};
+                }
+                else{
+                    error = "Username should be max 10 letters or numbers and should not contain any special characters!";
+                    textStyle={borderColor:'red',backgroundColor:'grey'};
+                }
+                break;
+            case "email":
+                if (validateEmail(value)){
+                    error = "";
+                    textStyle="";
+                }
+                else{
+                    error = "Email should be a valid gmail address ending with @gmail.com!";
+                    textStyle=".field{border-color:red;background-color:grey;}";
+                }
+                break;
+            case "password":
+                if (validatePassword(value)){
+                    error = "";
+                    textStyle="";
+                }
+                else{
+                    error = "Password should be between 8 to 12 characters including alphabets,numericals and only one @ or # special characters!";
+                    textStyle=".field{border-color:red;background-color:grey;}";
+                }
+                break;
+            default:
+                break;
+        }
+
+        setErrors({ ...errors, [name]: error });
+        setUserRegistration({ ...userRegistration, [name]: value });
+        console.log(errors);
+    };
+
+    let setGenderValue = (gender) => {
+        console.log(gender)
         if (gender && gender[0].id) {
             setUserRegistration({ ...userRegistration, gender: gender[0].displayText });
         } else {
@@ -75,13 +150,14 @@ function BasicForm() {
         console.log("Search button is clicked");
     }
 
-    const handleInput = (e) => {
-        const name = e.target.name;
-        const value = e.target.value;
-        setUserRegistration({ ...userRegistration, [name]: value });
-    };
+    // const handleInput = (e) => {
+    //     const name = e.target.name;
+    //     const value = e.target.value;
+    //     setUserRegistration({ ...userRegistration, [name]: value });
+    // };
 
     const genderList = [
+        { displayText: 'select a gender', id: 0, isBadge: false },
         { displayText: 'Female', id: 1, isBadge: false },
         { displayText: 'Male', id: 2, isBadge: false }
     ];
@@ -95,30 +171,35 @@ function BasicForm() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (userRegistration.username && userRegistration.email && userRegistration.password &&
+        if (validateUsername(userRegistration.username)&&validateEmail(userRegistration.email)&&validatePassword(userRegistration.password)&& 
             userRegistration.gender && userRegistration.age && userRegistration.skills.length > 0) {
             const newRecord = { ...userRegistration, id: new Date().getTime().toString() };
             setRecords([...records, newRecord]);
             setUserRegistration({ username: "", email: "", password: "", gender: "", age: "", skills: [] ,remembertheinfo: "false"});
+
         } else {
             alert("Please fill all the fields and select at least one skill");
         }
     };
 
+
     return (
-        <>
-            <form action="" onSubmit={handleSubmit}>
+        <> 
+            <div className='form'>
+            <h2>Sign In Form</h2>
+            <form backgroundColor="primary" action="" onSubmit={handleSubmit}>
                 <div>
-                    <TextInput label="Username" autoComplete="off" onChange={handleInput} name="username" value={userRegistration.username} placeholderText="Enter Your Name Here" required />
-                    <TextInput label="mail" autoComplete="off" onChange={handleInput} name="email" value={userRegistration.email} placeholderText="Enter Your Email" required />
-                    <TextInput label="Password" type="password" autoComplete="off" onChange={handleInput} name="password" value={userRegistration.password} placeholderText="Password" required />
-                   
+                    <TextInput error={errors["username"]}  style={textStyle} label="Username" autoComplete="off" onChange={handleInput} name="username" value={userRegistration.username} placeholderText="Enter Your Name Here" required />
+                    <TextInput error={errors["email"]}  style={textStyle} label="mail" autoComplete="off" onChange={handleInput} name="email" value={userRegistration.email} placeholderText="Enter Your Email" required />
+                    <TextInput error={errors["password"]}  style={textStyle} label="Password" type="password" autoComplete="off" onChange={handleInput} name="password" value={userRegistration.password} placeholderText="Password" required />
                     <Dropdown
                         childList={genderList}
                         isRequired
                         label="Gender"
                         selection="single"
-                        setSelectedValue={setGenderValue}
+                        selectedValue=""
+                        placeholder="select a gender"
+                        setSelectedValue={function Qa(){}}
                         size="medium"
                         required
                     />
@@ -171,39 +252,7 @@ function BasicForm() {
                     />
                 </div>
             </form>
-
-            <DataTable
-                columns={[
-                    { columnKey: 'username', header: 'UserName' },
-                    { columnKey: 'email', header: 'Email' },
-                    { columnKey: 'password', header: 'Password' },
-                    { columnKey: 'gender', header: 'Gender' },
-                    { columnKey: 'age', header: 'Age' },
-                    { columnKey: 'skills', header: 'Skills' },
-                    { columnKey: 'remebertheinfo', header: 'RememberTheInfo' }
-                ]}
-                data={records.map(record => ({
-                    username: record.username,
-                    email: record.email,
-                    password: record.password,
-                    gender: record.gender,
-                    age: record.age,
-                    skills: record.skills,
-                    remembertheinfo: record.rememberInfo ? 'True' : 'False'
-                }))}
-                headerAction={{
-                    iconTrailing: 'arrow_forward',
-                    onClick: () => { },
-                    size: 'small',
-                    text: 'Button',
-                    variant: 'primary'
-                }}
-                pageIndex={0}
-                pageSize={10}
-                renderSubComponent={setSearchValue}
-                selection="single"
-                size="large"
-            />
+            </div>
         </>
     );
 }
